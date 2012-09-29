@@ -1,9 +1,9 @@
 //
 // SignPDF.java
 //
-// Usage: java SignPDF pdfdocument.pdf
+// Usage: java SignPDF document.pdf
 //
-// Author: Bernhard Schneider <bernhard@neaptide.org>
+// Copyright: (c) 2012  Bernhard Schneider <bernhard@neaptide.org>
 //
 // This program is free software: you can use, redistribute, and/or modify
 // it under the terms of the GNU Affero General Public License, version 3
@@ -241,7 +241,7 @@ public class SignPDF {
         		PdfWriter.ALLOW_PRINTING | PdfWriter.ALLOW_SCREENREADERS | PdfWriter.ALLOW_COPY);
         
         // FIXME: this method doesn't work like expected,
-        //        produce information should be visible in the pdf-info dialog 
+        //        producer information should be visible in the pdf-info dialog 
         HashMap info = reader.getInfo();
         info.put("Producer", "SingPDF " + version + " " + (String)info.get("Producer"));
         stamper.setMoreInfo(info);
@@ -314,7 +314,6 @@ public class SignPDF {
         }
         //// 
         
-        // stamper.close();
         File mysrc = new File(src); mysrc.delete();
         File mydest = new File(dest); mydest.renameTo(mysrc);
         
