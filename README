@@ -1,0 +1,15 @@
+SignPDF - a simple command line application to sign a PDF document.
+
+SignPDF creates a config file if none exists and saves it under ~/.signpdf.
+
+A JKS keystore with a cert signed by your desired CA is mandatory 
+for use. Not mandatory, but a nice feature the tsa_url of a time 
+stamp server in order to timestamp your documents.
+
+The resulting PDF file will be signed and protected with allowed
+restrictions to print, content copying and content copying for 
+accessibility.
+
+
+
+
