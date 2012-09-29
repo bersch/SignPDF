@@ -9,6 +9,8 @@ fi
 CACERT=$1
 BCJAR=/usr/share/java/bcprov.jar
 
+STOREPASS=yourpassword
+
 
 TRUSTSTORE=.keystore
 ALIAS=`openssl x509 -inform PEM -subject_hash -noout -in "$CACERT"`
@@ -19,12 +21,12 @@ echo "Adding certificate to $TRUSTSTORE..."
 keytool -import -v -trustcacerts -alias $ALIAS \
       -file $CACERT \
       -keystore $TRUSTSTORE \
-	  -storepass swordfish
+	  -storepass $STOREPASS
 
 echo ""
 echo "Added '$CACERT' with alias '$ALIAS' to $TRUSTSTORE..."
 
 echo "checking ..."
 
-keytool -list -keystore "$TRUSTSTORE" -storepass swordfish
+keytool -list -keystore "$TRUSTSTORE" -storepass $STOREPASS
 
