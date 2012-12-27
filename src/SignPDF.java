@@ -31,9 +31,6 @@ import com.sun.jna.Native;
 
 import org.bouncycastle.*;
 import org.bouncycastle.tsp.*;
-import org.bouncycastle.tsp.TimeStampRequest;
-import org.bouncycastle.tsp.TimeStampToken;
-import org.bouncycastle.tsp.TimeStampResponseGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.security.cert.Certificate;
@@ -47,8 +44,8 @@ import java.security.PrivateKey;
 
 import com.itextpdf.text.pdf.PdfString;
 import com.itextpdf.text.pdf.PdfSignature;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Rectangle;
+//import com.itextpdf.text.DocumentException;
+//import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfDate;
 import com.itextpdf.text.pdf.PdfDictionary;
 import com.itextpdf.text.pdf.PdfName;
@@ -65,14 +62,10 @@ import com.itextpdf.text.pdf.*;
 
 public class SignPDF {
 
-	static String version = "0.3";	
-	
-	static String rcname = System.getenv("HOME") + "/.signpdf";
-	static Properties config = new Properties();
-	private static final long TICKS_PER_DAY = 1000 * 60 * 60 * 24;
-	
+	static String version = "1.0RC1";	
+
 	static String path;
-	static String  src;
+	static String src;
 	static String dest;
 	static String keystore_password;
 	static String key_password;
@@ -88,11 +81,13 @@ public class SignPDF {
 	static String https_proxy_host;
 	static String https_proxy_port;
 	static String root_cert;
+	static String rcname;
 	
-	
+	static Properties config = new Properties();
+	private static final long TICKS_PER_DAY = 1000 * 60 * 60 * 24;
+
 	
 	static char[] readPassword(String msg) throws RuntimeException {
-		
 		Console cons = System.console();
 		if (cons == null) 
 			throw new RuntimeException("can't continue w/o console");
@@ -100,13 +95,9 @@ public class SignPDF {
 		return pwd;
 	}
 	
-	public static boolean getProperties()
-		throws FileNotFoundException, IOException {
-		try {
-			config.load(new FileInputStream(rcname));
-		} catch (IOException e) {
-			return false;
-		}	
+	public static boolean getProperties() throws FileNotFoundException, IOException {
+		try { config.load(new FileInputStream(rcname)); } 
+		catch (IOException e) { return false;	}	
 
 		path              = config.getProperty("keystore");
 		keystore_password = config.getProperty("keystore_password");
@@ -123,6 +114,7 @@ public class SignPDF {
 		http_proxy_port   = config.getProperty("http_proxy_port");
 		https_proxy_host  = config.getProperty("https_proxy_host");
 		https_proxy_port  = config.getProperty("https_proxy_port");
+		
 		
 		if (path.length() == 0) 
 			throw new FileNotFoundException("can't continue w/o keystore.");
@@ -201,6 +193,12 @@ public class SignPDF {
 		}
 		src = args[0];
 		dest = src + ".temp";
+
+		rcname = System.getenv("SIGNPDFRC");
+	    if (rcname == null || rcname.length() == 0)
+	    	rcname = System.getenv("HOME") + "/.signpdf";	    	
+	    else
+	    	System.out.println("using SIGNPDFRC=" + rcname);
 		
 		if (!getProperties()) 
 			createDefaultProperties();
@@ -226,11 +224,9 @@ public class SignPDF {
         long ticks_delta = ( ticks_to - ticks_now ) / TICKS_PER_DAY;
         System.out.println("Certificate will expire in " + ticks_delta + " days.");
 
-        // Verify sig
         Signature s = Signature.getInstance("SHA1withRSA");
         s.initVerify(ks.getCertificate(alias));
 
-        // check validity
         cert.checkValidity();
         
         PdfReader reader = new PdfReader(src);
@@ -240,14 +236,11 @@ public class SignPDF {
         stamper.setEncryption(true, null, null,
         		PdfWriter.ALLOW_PRINTING | PdfWriter.ALLOW_SCREENREADERS | PdfWriter.ALLOW_COPY);
         
-        // FIXME: this method doesn't work like expected,
-        //        producer information should be visible in the pdf-info dialog 
-        HashMap info = reader.getInfo();
-        info.put("Producer", "SingPDF " + version + " " + (String)info.get("Producer"));
+        HashMap<String, String> info = reader.getInfo();
+        info.put("Creator", "SingPDF " + version);
         stamper.setMoreInfo(info);
         
         PdfSignatureAppearance appearance = stamper.getSignatureAppearance();
-        // stamper.close();
         
         appearance.setReason(reason);
         appearance.setLocation(location);
@@ -256,7 +249,6 @@ public class SignPDF {
         appearance.setCertificationLevel(PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED);
 
         /// ts + ocsp
-    	PdfPKCS7 sgn = new PdfPKCS7(key, chain, null, "SHA1", null, false);
     	PdfSignature dic = new PdfSignature(PdfName.ADOBE_PPKLITE, new PdfName("adbe.pkcs7.detached"));
     	dic.setReason(appearance.getReason());
     	dic.setLocation(appearance.getLocation());
@@ -273,7 +265,7 @@ public class SignPDF {
         	TSAClient tsc = null;
         
         	int contentEstimated = 15000;
-        	HashMap exc = new HashMap();
+        	HashMap<PdfName,Integer> exc = new HashMap<PdfName, Integer>();
         	exc.put(PdfName.CONTENTS, new Integer(contentEstimated * 2 + 2));
         	appearance.preClose(exc);
                 	
@@ -285,8 +277,6 @@ public class SignPDF {
         	while ((n = data.read(buf)) > 0) {
         		mdig.update(buf, 0, n);
         	}
-        	byte hash[]  = mdig.digest();
-        	Calendar cal = Calendar.getInstance();
         	
         	
         	if (root_cert != null && root_cert.length() > 0) {
@@ -297,6 +287,9 @@ public class SignPDF {
                 ocsp = new OcspClientBouncyCastle().getEncoded((X509Certificate)chain[0], root, url);
         	}
 
+        	byte hash[]  = mdig.digest();
+        	Calendar cal = Calendar.getInstance();
+        	PdfPKCS7 sgn = new PdfPKCS7(key, chain, null, "SHA1", null, false);
         	byte sh[]    = sgn.getAuthenticatedAttributeBytes(hash, cal, ocsp);
         	sgn.update(sh, 0, sh.length);
         	
@@ -312,7 +305,7 @@ public class SignPDF {
         		appearance.close(dic2);
         	}
         }
-        //// 
+        // timestamping + ocsp 
         
         File mysrc = new File(src); mysrc.delete();
         File mydest = new File(dest); mydest.renameTo(mysrc);

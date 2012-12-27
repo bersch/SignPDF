@@ -1,6 +1,19 @@
-SignPDF - a simple command line application to sign a PDF document.
+SignPDF - a simple iText based command line application to
+sign a PDF document.
 
-SignPDF creates a config file if none exists and saves it under ~/.signpdf.
+Features:
+
+    * Signs a PDF document with a valid certificate
+    * Encrypts/Protects a PDF document
+    * Timestamps a PDF document (optional feature)
+    * Supports different Config-Files defined by env. variable
+
+
+All settings will be taken from ~/.signpdf configuration file. 
+If no config file exist, a fresh config file will be created.
+
+Alternatively the environment variable SIGNPDFRC can be used to
+sign with different keys.
 
 A JKS keystore with a cert signed by your desired CA is mandatory 
 for use. Not mandatory, but a nice feature the tsa_url of a time 
@@ -10,6 +23,7 @@ The resulting PDF file will be signed and protected with allowed
 restrictions to print, content copying and content copying for 
 accessibility.
 
-
+Most of the crypto code is based on the iText docs at
+  http://itextpdf.sourceforge.net/howtosign.html
 
 
