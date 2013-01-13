@@ -6,15 +6,30 @@ Features:
     * Signs a PDF document with a valid certificate
     * Encrypts/Protects a PDF document
     * Timestamps a PDF document (optional feature)
+<<<<<<< HEAD
     * Supports different Config-Files defined by env. variable
 
 
 All settings will be taken from ~/.signpdf configuration file. 
 If no config file exist, a fresh config file will be created.
+=======
+    * Supports different config files defined by environment
+	  variable
+
+
+All settings will be taken by default from ~/.signpdf configuration 
+file. If no config file exist, a fresh config file will be created.
+>>>>>>> ecf59a62d9213982414d9ef80faf0d318dbc95fe
 
 Alternatively the environment variable SIGNPDFRC can be used to
 sign with different keys.
 
+<<<<<<< HEAD
+=======
+If you don't like to leave plain passwords in the config file,
+you will be prompted for password by running SignPDF.
+
+>>>>>>> ecf59a62d9213982414d9ef80faf0d318dbc95fe
 A JKS keystore with a cert signed by your desired CA is mandatory 
 for use. Not mandatory, but a nice feature the tsa_url of a time 
 stamp server in order to timestamp your documents.
