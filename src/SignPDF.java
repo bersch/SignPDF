@@ -305,7 +305,7 @@ public class SignPDF {
         		appearance.close(dic2);
         	}
         }
-        // timestamping + ocsp 
+        // ~timestamping + ocsp 
         
         File mysrc = new File(src); mysrc.delete();
         File mydest = new File(dest); mydest.renameTo(mysrc);
