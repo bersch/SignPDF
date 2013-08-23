@@ -29,9 +29,9 @@ import java.security.*;
 import com.sun.jna.Library;
 import com.sun.jna.Native;
 
-import org.bouncycastle.*;
-import org.bouncycastle.tsp.*;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+//import org.bouncycastle.*;
+//import org.bouncycastle.tsp.*;
+//import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -227,7 +227,14 @@ public class SignPDF {
         Signature s = Signature.getInstance("SHA1withRSA");
         s.initVerify(ks.getCertificate(alias));
 
-        cert.checkValidity();
+        try {
+			cert.checkValidity();
+			System.out.println("Validation check passed.");
+		} catch (Exception e) {
+			System.out.println("Certificate expired or invalid. Abroting.");
+			System.exit(1);
+		}
+
         
         PdfReader reader = new PdfReader(src);
         FileOutputStream os = new FileOutputStream(dest);
