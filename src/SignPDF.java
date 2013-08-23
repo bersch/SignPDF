@@ -62,7 +62,7 @@ import com.itextpdf.text.pdf.*;
 
 public class SignPDF {
 
-	static String version = "1.0RC1";	
+	static String version = "1.0";	
 
 	static String path;
 	static String src;
